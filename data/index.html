@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin panel</title>
+    <meta charset="utf-8">
+    <meta name="theme-color" content="#f26522">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://www.cssscript.com/demo/onscreen-joystick/joy.js"></script>
+    <script src="main.js"></script>
+</head>
+
+<body>
+    <div id="topBar">ESP32 | Robot vacuum cleaner | Admin panel</div>
+    <div id="menu">
+        <div>
+            <div style="font-size: 18px; color: orange;">Статус датчиков</div>
+            <div>Отобойник: <span id="io4"></span></div>
+            <div>Левый столкновение: <span id="io1"></span></div>
+            <div>Центр столкновение: <span id="io2"></span></div>
+            <div>Правый столкновение: <span id="io3"></span></div>
+        </div>
+        <div style="margin-top: 10px;" onclick="reconect()">
+            <img src="https://img.icons8.com/ios-glyphs/18/7289da/new-slide.png" />
+            <span>Статус: </span><span id="status" style="color:red">Offline</span>
+        </div>
+        <div onclick="find()">
+            <img src="https://img.icons8.com/ios-glyphs/18/7289da/commercial.png" />
+            <span>Найти устройство</span>
+        </div>
+        <div onclick="go()">
+            <img src="https://img.icons8.com/ios-glyphs/18/7289da/low-priority.png" />
+            <span>Поехать</span>
+        </div>
+        <div onclick="stop()">
+            <img src="https://img.icons8.com/ios-glyphs/18/7289da/high-priority.png" />
+            <span>Остановиться</span>
+        </div>
+        <div onclick="goHome()">
+            <img src="https://img.icons8.com/ios-glyphs/18/7289da/flow-chart.png" />
+            <span>Возврат на базу</span>
+        </div>
+        <div onclick="clearStory()">
+            <img src="https://img.icons8.com/ios-glyphs/18/7289da/delete-sign.png" />
+            <span>Очистить карту</span>
+        </div>
+        <div>
+            <div>
+                <input type="radio" name="contact" value="random" id="randomAlg" onclick="alg(this);">
+                <label for="randomAlg">Алгоритм: рандом</label>
+            </div>
+            <div>
+                <input type="radio" name="contact" value="contour" id="contourAlg" onclick="alg(this);">
+                <label for="contourAlg">Алгоритм: контур</label>
+            </div>
+            <div>
+                <input type="radio" name="contact" value="snake" id="snakeAlg" onclick="alg(this);">
+                <label for="snakeAlg">Алгоритм: змейка</label>
+            </div>
+            <center>
+                <h5 style="color: orange;">Ручное управление</h5>
+            </center>
+            <div class="space-top">
+                <div id="joyDiv"></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <canvas id="canvas" width="800" height="512"></canvas>
+    </div>
+</body>
+
+</html>
