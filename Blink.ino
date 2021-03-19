@@ -72,10 +72,9 @@ const char* password = "123456789";
 
 File file;
 int counterLeft = 0, counterRight = 0, speedLeft = 0, speedRight = 0, touchValue = 100,
-    threshold = 50,  speed = 0 ;
-int drive = 0;
-bool driveState = false, oldStateCounterLeft = false, oldStateCounterRight = false,
-     oldValueTouch = false, speakerState = false;
+    threshold = 55, speed = 0;
+int drive = 0, timer = 0;
+bool driveState = false, oldValueTouch = false, speakerState = false, JoyStick = false;
 
 IPAddress local_IP(192, 168, 1, 199);
 IPAddress gateway(192, 168, 1, 1);
@@ -98,6 +97,15 @@ void speaker()
   digitalWrite(speakerPIN, LOW);
   speakerState = false;
 }
+
+void stop()
+{
+  ledcWrite(2, 0);
+  ledcWrite(3, 0);
+  ledcWrite(0, 0);
+  ledcWrite(1, 0);
+}
+
 
 void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg,
                uint8_t* data, size_t len)
@@ -126,6 +134,7 @@ void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventTyp
     else if (!strncmp((const char*)data, "stopAuto", 8))
     {
       driveState = false;
+      stop();
     }
     else if (!strncmp((const char*)data, "goHome", 6))
     {
@@ -200,39 +209,6 @@ void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventTyp
   }
 }
 
-void IRAM_ATTR laserLeftFunction()
-{
-  if (driveState)
-  {
-    ledcWrite(1, 0);
-    ledcWrite(2, 0);
-    ledcWrite(3, 0);
-    ledcWrite(0, 255);
-  }
-}
-
-void IRAM_ATTR laserCenterFunction()
-{
-  if (driveState)
-  {
-    ledcWrite(1, 0);
-    ledcWrite(3, 0);
-    ledcWrite(0, 255);
-    ledcWrite(2, 255);
-  }
-}
-
-void IRAM_ATTR laserRightFunction()
-{
-  if (driveState)
-  {
-    ledcWrite(0, 0);
-    ledcWrite(2, 0);
-    ledcWrite(3, 0);
-    ledcWrite(1, 255);
-  }
-}
-
 void IRAM_ATTR countLeftFunction()
 {
   counterLeft++;
@@ -254,14 +230,11 @@ void initPIN()
   pinMode(rightWheelForwardPIN, OUTPUT);
   pinMode(leftWheelBackwardPIN, OUTPUT);
   pinMode(rightWheelBackwardPIN, OUTPUT);
-  pinMode(laserSensorLeftPIN, INPUT_PULLUP);
-  pinMode(laserSensorCenterPIN, INPUT_PULLUP);
-  pinMode(laserSensorRightPIN, INPUT_PULLUP);
+  pinMode(laserSensorLeftPIN, INPUT);
+  pinMode(laserSensorCenterPIN, INPUT);
+  pinMode(laserSensorRightPIN, INPUT);
   pinMode(countRotationLeftPIN, INPUT_PULLUP);
   pinMode(countRotationRightPIN, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(laserSensorLeftPIN), laserLeftFunction, FALLING);
-  attachInterrupt(digitalPinToInterrupt(laserSensorCenterPIN), laserCenterFunction, FALLING);
-  attachInterrupt(digitalPinToInterrupt(laserSensorRightPIN), laserRightFunction, FALLING);
   attachInterrupt(digitalPinToInterrupt(countRotationLeftPIN), countLeftFunction, FALLING);
   attachInterrupt(digitalPinToInterrupt(countRotationRightPIN), countRightFunction, FALLING);
   if (speakerPIN)
@@ -274,6 +247,7 @@ void initPIN()
 
 void setup()
 {
+  delay(1000);
   Serial.begin(115200);
   initPIN();
   if (randomTurnLeft ^ randomTurnRight)
@@ -338,10 +312,69 @@ void setup()
 
 void loop()
 {
-  if(speakerState){
+  if (speakerState)  {
     speaker();
   }
 
+  if (driveState) {
+    if (digitalRead(laserSensorLeftPIN) == LOW) {
+      ledcWrite(1, 0);
+      ledcWrite(3, speedLeft);
+      ledcWrite(0, 0);
+      ledcWrite(2, speedRight);
+      delay(500);
+      ledcWrite(1, 0);
+      ledcWrite(3, 0);
+      ledcWrite(0, speedLeft);
+      ledcWrite(2, speedRight);
+      delay(700);
+    } else if (digitalRead(laserSensorCenterPIN) == LOW) {
+      ledcWrite(1, 0);
+      ledcWrite(3, speedLeft);
+      ledcWrite(0, 0);
+      ledcWrite(2, speedRight);
+      delay(1000);
+      ledcWrite(1, 0);
+      ledcWrite(3, 0);
+      ledcWrite(0, speedLeft);
+      ledcWrite(2, speedRight);
+      delay(700);
+    } else if (digitalRead(laserSensorRightPIN) == LOW) {
+      ledcWrite(1, 0);
+      ledcWrite(3, speedLeft);
+      ledcWrite(0, 0);
+      ledcWrite(2, speedRight);
+      delay(500);
+      ledcWrite(0, 0);
+      ledcWrite(2, 0);
+      ledcWrite(3, speedLeft);
+      ledcWrite(1, speedRight);
+      delay(700);
+    } else {
+      ledcWrite(2, 0);
+      ledcWrite(3, 0);
+      ledcWrite(0, speedLeft);
+      ledcWrite(1, speedRight);
+    }
+  }
 
-  delay(10);
+
+
+  /*
+    Serial.println(counterLeft);
+    if (counterLeft <= 16) {
+      ledcWrite(3, 0);
+      ledcWrite(0, speedLeft);
+    }
+
+    if (counterLeft > 16 && counterLeft <= 32) {
+      ledcWrite(0, 0);
+      ledcWrite(3, speedLeft);
+    }
+
+    if (counterLeft > 32) {
+      counterLeft = 0;
+    }
+
+  */
 }
