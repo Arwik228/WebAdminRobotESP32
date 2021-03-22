@@ -10,7 +10,7 @@ var textTemplate = {
 }
 var ws, mapArray = [],
     text = textTemplate.start,
-    joy;
+    joy, timeout;
 
 function socket() {
     ws = new WebSocket(`ws://${window.location.host || "192.168.1.199"}/websocket`);
@@ -26,34 +26,47 @@ function socket() {
     }
     ws.onmessage = (e) => {
         try {
-            let message = eval(`(${e.data})`);
+            let message = JSON.parse(e.data);
             let io1 = document.getElementById("io1");
             let io2 = document.getElementById("io2");
             let io3 = document.getElementById("io3");
+            let io4 = document.getElementById("io4");
+            var clear = () => {
+                io1.innerText = io2.innerText = io3.innerText = io4.innerText = "false";
+                io1.style.color = io2.style.color = io3.style.color = io4.style.color = "red";
+            }
             if (message.center !== undefined) {
-                message.left ? (
+                timeout = Date.now();
+                message.left == 0 ? (
                     io1.innerText = "false",
                     io1.style.color = "lime"
                 ) : (
                     io1.innerText = "true",
                     io1.style.color = "red"
                 );
-                message.center ? (
+                message.center == 0 ? (
                     io2.innerText = "false",
                     io2.style.color = "lime"
                 ) : (
                     io2.innerText = "true",
                     io2.style.color = "red"
                 );
-                message.right ? (
+                message.right == 0 ? (
                     io3.innerText = "false",
                     io3.style.color = "lime"
                 ) : (
                     io3.innerText = "true",
                     io3.style.color = "red"
                 );
+                message.bumper == 0 ? (
+                    io4.innerText = "false",
+                    io4.style.color = "lime"
+                ) : (
+                    io4.innerText = "true",
+                    io4.style.color = "red"
+                );
             }
-        } catch (j) {
+        } catch (str) {
             console.log(e.data)
         }
         text = textTemplate.ready;
@@ -192,6 +205,7 @@ window.onload = () => {
     render();
 
     function render() {
+        if (timeout + 1000 < Date.now()) { clear() }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < 64; i++) {
             for (let j = 0; j < 100; j++) {
